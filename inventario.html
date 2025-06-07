@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Equipos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @keyframes giro {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .icono-animado {
+      font-size: 2rem;
+      animation: giro 3s linear infinite;
+      display: inline-block;
+      margin-right: 10px;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      color: white;
+    }
+    .seccion {
+      display: none;
+      margin-top: 20px;
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .visible { display: block; }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      width: 100%;
+      max-width: 400px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: blue;
+    }
+    input, select, textarea {
+      display: block;
+      margin: 10px 0;
+      padding: 10px;
+      width: 100%;
+      max-width: 400px;
+      font-size: 1rem;
+    }
+    .equipo {
+      background: #fff;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      color: black;
+      border-radius: 5px;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+        font-size: 16px;
+      }
+    }
+    #consultaBtn {
+      font-size: 0.9rem;
+      background-color: #333;
+      margin-top: 40px;
+    }
+    #menu button {
+      transition: background-color 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <h1><span class="icono-animado"><i class="fas fa-cogs"></i></span>Inicio</h1>
+  <button onclick="mostrarSeccion('menu')">Mostrar menú principal</button>
+
+  <div id="menu" class="seccion visible">
+    <button onclick="mostrarSeccion('registro')">Registrar nuevo equipo</button>
+    <button onclick="mostrarSeccion('registroMonitor')">Registrar monitor</button>
+    <button onclick="mostrarSeccion('registroMouse')">Registrar mouse</button>
+    <button onclick="mostrarSeccion('registroTeclado')">Registrar teclado</button>
+    <button id="consultaBtn" onclick="mostrarSeccion('inventario'); cargarInventario()">Consultar inventario</button>
+  </div>
+
+  <div id="registro" class="seccion">
+    <form id="formEquipo">
+      <input name="id" placeholder="ID">
+      <input name="nombre" placeholder="Nombre">
+      <input name="modelo" placeholder="Modelo">
+      <button type="submit">Guardar equipo</button>
+    </form>
+    <div id="opcionOtroRegistro">
+      <p>¿Desea registrar otro equipo?</p>
+      <button onclick="reiniciarFormulario()">Sí</button>
+      <button onclick="mostrarSeccion('menu')">No</button>
+    </div>
+  </div>
+
+  <div id="registroMonitor" class="seccion">
+    <form onsubmit="guardarEquipo(event, 'Monitor')">
+      <input name="id" placeholder="ID">
+      <input name="nombre" placeholder="Nombre">
+      <input name="modelo" placeholder="Modelo">
+      <button type="submit">Guardar monitor</button>
+    </form>
+  </div>
+
+  <div id="registroMouse" class="seccion">
+    <form onsubmit="guardarEquipo(event, 'Mouse')">
+      <input name="id" placeholder="ID">
+      <input name="nombre" placeholder="Nombre">
+      <input name="modelo" placeholder="Modelo">
+      <button type="submit">Guardar mouse</button>
+    </form>
+  </div>
+
+  <div id="registroTeclado" class="seccion">
+    <form onsubmit="guardarEquipo(event, 'Teclado')">
+      <input name="id" placeholder="ID">
+      <input name="nombre" placeholder="Nombre">
+      <input name="modelo" placeholder="Modelo">
+      <button type="submit">Guardar teclado</button>
+    </form>
+  </div>
+
+  <div id="inventario" class="seccion">
+    <div id="listaEquipos"></div>
+    <button onclick="mostrarSeccion('reporte')">Reportar falla</button>
+  </div>
+
+  <div id="reporte" class="seccion">
+    <form id="formFalla">
+      <select id="selectEquipo"></select>
+      <textarea name="falla" placeholder="Describa la falla"></textarea>
+      <button type="submit">Enviar reporte</button>
+    </form>
+    <div id="confirmacionFalla">Reporte enviado correctamente.</div>
+  </div>
+
+  <script>
+    let equipos = JSON.parse(localStorage.getItem('equipos')) || [];
+
+    function guardarLocalStorage() {
+      localStorage.setItem('equipos', JSON.stringify(equipos));
+    }
+
+    function mostrarSeccion(id) {
+      document.querySelectorAll('.seccion').forEach(div => div.classList.remove('visible'));
+      const destino = document.getElementById(id);
+      if (destino) destino.classList.add('visible');
+    }
+
+    function volverAlMenu() {
+      const form = document.getElementById('formFalla');
+      if (form) form.reset();
+      const confirm = document.getElementById('confirmacionFalla');
+      if (confirm) confirm.classList.remove('visible');
+      mostrarSeccion('menu');
+    }
+
+    function guardarEquipo(e, tipo) {
+      e.preventDefault();
+      const datos = Object.fromEntries(new FormData(e.target));
+      datos.tipo = tipo;
+      equipos.push(datos);
+      guardarLocalStorage();
+      alert(`${tipo} registrado correctamente.`);
+      volverAlMenu();
+      e.target.reset();
+    }
+
+    function cargarInventario() {
+      const contenedor = document.getElementById('listaEquipos');
+      contenedor.innerHTML = '';
+      equipos.forEach(datos => {
+        const equipoDiv = document.createElement('div');
+        equipoDiv.className = 'equipo';
+        equipoDiv.textContent = `[${datos.tipo}] ID: ${datos.id}, Nombre: ${datos.nombre}, Modelo: ${datos.modelo}`;
+        contenedor.appendChild(equipoDiv);
+      });
+    }
+
+    const formEquipo = document.getElementById('formEquipo');
+    if (formEquipo) {
+      formEquipo.addEventListener('submit', e => guardarEquipo(e, 'Equipo'));
+    }
+
+    function reiniciarFormulario() {
+      document.getElementById('opcionOtroRegistro').classList.remove('visible');
+      mostrarSeccion('registro');
+    }
+  </script>
+</body>
+</html>
